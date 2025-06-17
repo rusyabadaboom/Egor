@@ -1,0 +1,32 @@
+INSERT INTO Clients (Name, Phone, Email) VALUES
+('Иван Иванов', '+79991112233', 'ivan@example.com'),
+('Мария Петрова', '+79992223344', 'maria@example.com'),
+('Алексей Сидоров', '+79993334455', 'alex@example.com');
+
+INSERT INTO Rooms (RoomNumber, Type, Price, Status) VALUES
+('101', 'Стандарт', 5000.00, 'Чистый'),
+('102', 'Люкс', 10000.00, 'Чистый'),
+('103', 'Стандарт', 5000.00, 'Грязный');
+
+INSERT INTO Staff (Name, Role) VALUES
+('Ольга Смирнова', 'Уборщик'),
+('Дмитрий Козлов', 'Уборщик'),
+('Елена Васильева', 'Администратор');
+
+INSERT INTO Services (Name, Price) VALUES
+('Завтрак', 1000.00),
+('Уборка', 500.00),
+('Трансфер', 2000.00);
+
+INSERT INTO Bookings (ClientID, RoomID, CheckInDate, CheckOutDate, TotalPrice) VALUES
+(1, 1, '2025-06-01', '2025-06-03', 10000.00),
+(2, 2, '2025-06-02', '2025-06-04', 20000.00),
+(3, 3, '2025-06-03', '2025-06-05', 10000.00);
+
+INSERT INTO BookingServices (BookingID, ServiceID) VALUES
+(1, 1), (1, 2), (2, 3);
+
+INSERT INTO CleaningSchedule (RoomID, StaffID, CleaningDate, Status) VALUES
+(3, 1, '2025-06-04', 'Запланировано'),
+(1, 2, '2025-06-03', 'Выполнено');
+GO

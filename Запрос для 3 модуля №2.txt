@@ -1,0 +1,11 @@
+UPDATE Rooms
+SET Status = 'Чистый'
+WHERE Status = 'Назначен к уборке';
+
+
+
+ДЛЯ ОБРАТНОГО ДЕЙСТВИЯ ВЫПОЛНИТЬ ЗАПРОС 
+
+UPDATE Rooms
+SET Status = 'Назначен к уборке'
+WHERE Status = 'Чистый';

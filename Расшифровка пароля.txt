@@ -1,0 +1,8 @@
+USE BD;
+OPEN SYMMETRIC KEY SymKey_Encrypt DECRYPTION BY CERTIFICATE Cert_Encrypt;
+SELECT 
+    Username, 
+    CONVERT(NVARCHAR(5), DECRYPTBYKEY(PasswordEncrypted)) AS PasswordDecrypted
+FROM Users;
+CLOSE SYMMETRIC KEY SymKey_Encrypt;
+GO

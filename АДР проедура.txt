@@ -1,0 +1,25 @@
+CREATE PROCEDURE CalculateADR
+    @StartDate DATE,
+    @EndDate DATE
+AS
+BEGIN
+    DECLARE @TotalRevenue DECIMAL(10,2);
+    DECLARE @TotalRoomNights INT;
+
+    -- Чистая выручка
+    SELECT @TotalRevenue = SUM(TotalPrice)
+    FROM Bookings
+    WHERE CheckInDate >= @StartDate AND CheckOutDate <= @EndDate;
+
+    -- Количество ночей
+    SELECT @TotalRoomNights = SUM(DATEDIFF(DAY, CheckInDate, CheckOutDate))
+    FROM Bookings
+    WHERE CheckInDate >= @StartDate AND CheckOutDate <= @EndDate;
+
+    -- Расчёт ADR
+    SELECT ISNULL(@TotalRevenue / NULLIF(@TotalRoomNights, 0), 0) AS ADR;
+END;
+GO
+
+-- Пример вызова
+EXEC CalculateADR @StartDate = '2025-06-01', @EndDate = '2025-06-30';

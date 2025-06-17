@@ -1,0 +1,14 @@
+SELECT 
+    c.Name,
+    SUM(b.TotalPrice + ISNULL(bs.ServiceTotal, 0)) AS TotalToPay
+FROM Clients c
+JOIN Bookings b ON c.ClientID = b.ClientID
+LEFT JOIN (
+    SELECT 
+        bs.BookingID,
+        SUM(s.Price) AS ServiceTotal
+    FROM BookingServices bs
+    JOIN Services s ON bs.ServiceID = s.ServiceID
+    GROUP BY bs.BookingID
+) bs ON b.BookingID = bs.BookingID
+GROUP BY c.Name;

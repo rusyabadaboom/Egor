@@ -1,0 +1,79 @@
+-- 1. Создание базы данных BD
+CREATE DATABASE BD;
+GO
+
+-- 2. Создание таблицы Users в BD
+USE BD;
+CREATE TABLE Users (
+    Username NVARCHAR(50) PRIMARY KEY,
+    PasswordEncrypted VARBINARY(256) -- Для зашифрованных паролей
+);
+GO
+
+-- 3. Настройка шифрования
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'StrongPassword123!';
+CREATE CERTIFICATE Cert_Encrypt WITH SUBJECT = 'Password Encryption';
+CREATE SYMMETRIC KEY SymKey_Encrypt WITH ALGORITHM = AES_256 ENCRYPTION BY CERTIFICATE Cert_Encrypt;
+GO
+
+-- 4. Функция для генерации читаемого пароля (буквы и цифры)
+CREATE FUNCTION dbo.GenerateRandomPassword()
+RETURNS NVARCHAR(5)
+AS
+BEGIN
+    DECLARE @Password NVARCHAR(5) = '';
+    DECLARE @Chars NVARCHAR(62) = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    DECLARE @i INT = 1;
+    WHILE @i <= 5
+    BEGIN
+        SET @Password += SUBSTRING(@Chars, ABS(CHECKSUM(NEWID())) % 62 + 1, 1);
+        SET @i += 1;
+    END
+    RETURN @Password;
+END;
+GO
+
+-- 5. Создание пользователей, баз данных и прав доступа
+DECLARE @i INT = 1;
+DECLARE @username NVARCHAR(50);
+DECLARE @password NVARCHAR(5);
+DECLARE @dbname NVARCHAR(50);
+DECLARE @sql NVARCHAR(MAX);
+
+WHILE @i <= 10
+BEGIN
+    -- Формируем имена
+    SET @username = 'user' + RIGHT('0' + CAST(@i AS NVARCHAR(2)), 2); -- user01, user02, ..., user10
+    SET @dbname = 'BD' + RIGHT('0' + CAST(@i AS NVARCHAR(2)), 2); -- BD01, BD02, ..., BD10
+    
+    -- Генерация читаемого пароля
+    SET @password = dbo.GenerateRandomPassword();
+    
+    -- Создание базы данных
+    SET @sql = 'CREATE DATABASE ' + QUOTENAME(@dbname) + ';';
+    EXEC sp_executesql @sql;
+    
+    -- Создание логина
+    SET @sql = 'CREATE LOGIN ' + QUOTENAME(@username) + ' WITH PASSWORD = ''' + @password + ''';';
+    EXEC sp_executesql @sql;
+    
+    -- Создание пользователя в базе
+    SET @sql = 'USE ' + QUOTENAME(@dbname) + '; CREATE USER ' + QUOTENAME(@username) + ' FOR LOGIN ' + QUOTENAME(@username) + ';';
+    EXEC sp_executesql @sql;
+    
+    -- Назначение прав db_owner
+    SET @sql = 'USE ' + QUOTENAME(@dbname) + '; EXEC sp_addrolemember ''db_owner'', ' + QUOTENAME(@username) + ';';
+    EXEC sp_executesql @sql;
+    
+    -- Сохранение зашифрованного пароля в таблицу Users
+    OPEN SYMMETRIC KEY SymKey_Encrypt DECRYPTION BY CERTIFICATE Cert_Encrypt;
+    SET @sql = 'INSERT INTO BD.dbo.Users (Username, PasswordEncrypted) VALUES (''' + @username + ''', ENCRYPTBYKEY(KEY_GUID(''SymKey_Encrypt''), ''' + @password + '''));';
+    EXEC sp_executesql @sql;
+    CLOSE SYMMETRIC KEY SymKey_Encrypt;
+    
+    -- Вывод пароля для проверки (удалите это на экзамене, если не нужно)
+    PRINT 'User: ' + @username + ', Password: ' + @password;
+    
+    SET @i = @i + 1;
+END;
+GO

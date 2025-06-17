@@ -1,0 +1,56 @@
+CREATE DATABASE Hotel;
+GO
+USE Hotel;
+GO
+
+CREATE TABLE Clients (
+    ClientID INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Phone NVARCHAR(20),
+    Email NVARCHAR(100)
+);
+
+CREATE TABLE Rooms (
+    RoomID INT PRIMARY KEY IDENTITY(1,1),
+    RoomNumber NVARCHAR(10) NOT NULL,
+    Type NVARCHAR(50),
+    Price DECIMAL(10,2),
+    Status NVARCHAR(20) CHECK (Status IN ('Занят', 'Грязный', 'Назначен к уборке', 'Чистый'))
+);
+
+CREATE TABLE Staff (
+    StaffID INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Role NVARCHAR(50)
+);
+
+CREATE TABLE Bookings (
+    BookingID INT PRIMARY KEY IDENTITY(1,1),
+    ClientID INT FOREIGN KEY REFERENCES Clients(ClientID),
+    RoomID INT FOREIGN KEY REFERENCES Rooms(RoomID),
+    CheckInDate DATE NOT NULL,
+    CheckOutDate DATE NOT NULL,
+    TotalPrice DECIMAL(10,2),
+    CONSTRAINT CHK_Dates CHECK (CheckOutDate > CheckInDate)
+);
+
+CREATE TABLE Services (
+    ServiceID INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Price DECIMAL(10,2)
+);
+
+CREATE TABLE BookingServices (
+    BookingID INT FOREIGN KEY REFERENCES Bookings(BookingID),
+    ServiceID INT FOREIGN KEY REFERENCES Services(ServiceID),
+    PRIMARY KEY (BookingID, ServiceID)
+);
+
+CREATE TABLE CleaningSchedule (
+    ScheduleID INT PRIMARY KEY IDENTITY(1,1),
+    RoomID INT FOREIGN KEY REFERENCES Rooms(RoomID),
+    StaffID INT FOREIGN KEY REFERENCES Staff(StaffID),
+    CleaningDate DATE NOT NULL,
+    Status NVARCHAR(20) -- Например, 'Запланировано', 'Выполнено'
+);
+GO

@@ -1,0 +1,4 @@
+BACKUP DATABASE BD 
+TO DISK = 'C:\Backup\BD.bak' 
+WITH FORMAT, INIT, NAME = 'Full Backup of BD';
+GO
